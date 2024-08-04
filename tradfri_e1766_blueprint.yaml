@@ -1,0 +1,81 @@
+blueprint:
+  name: "TRADFRI open/close remote (E1766) for covers using zigbee2mqtt"
+  description: "Control open/close button for shades, using short and long presses to imitate the original functionality. Short presses will fully open or close, long presses will open/close as long as you hold the button and stop upon release of the button."
+  domain: automation
+  source_url: https://github.com/ChristianRiesen/homeassistant-blueprints/blob/main/tradfri_e1766_blueprint.yaml
+  author: Christian Riesen
+  input:
+    switch:
+      name: switch
+      description: "Tradfri open/close switch"
+      selector:
+        entity:
+          integration: mqtt
+          domain: sensor
+    cover:
+      name: "Cover to control"
+      description: Can be multiple covers to choose here, so they are all controlled by the same button
+      selector:
+        target:
+          entity:
+            domain: cover
+    cover_top:
+      name: "Top Cover Position"
+      description: "The top most position the cover can have. Default is 100."
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 100
+          mode: slider
+          step: 1
+    cover_bottom:
+      name: "Bottom Cover Position"
+      description: "The lowest position the cover can have. Default is 0."
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 100
+          mode: slider
+          step: 1
+
+mode: restart
+
+max_exceeded: silent
+
+trigger:
+  - platform: state
+    entity_id: !input 'switch'
+    attribute: action
+
+variables:
+    command: '{{ trigger.to_state.state }}'
+    top_position: !input 'cover_top'
+    bottom_position: !input 'cover_bottom'
+
+condition:
+  - condition: template
+    value_template: "{{ command != ''}}"
+
+action:
+  - choose:
+    - conditions:
+      - '{{ command == ''open'' }}'
+      sequence:
+      - service: cover.set_cover_position
+        target: !input 'cover'
+        data:
+          position: '{{ top_position }}'
+    - conditions:
+      - '{{ command == ''close'' }}'
+      sequence:
+      - service: cover.set_cover_position
+        target: !input 'cover'
+        data:
+          position: '{{ bottom_position }}'
+    - conditions:
+      - '{{ command == ''stop'' }}'
+      sequence:
+      - service: cover.stop_cover
+        target: !input 'cover'
