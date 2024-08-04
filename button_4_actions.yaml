@@ -1,0 +1,65 @@
+blueprint:
+  name: Button Action Handler
+  description: This blueprint allows you to configure actions based on the state of a selected entity that changes based on button presses (e.g., 'sensor.button_01_action' that can have states like '1_single', '2_single', etc.).
+  domain: automation
+  source_url: https://github.com/ChristianRiesen/homeassistant-blueprints/blob/main/button_4_actions.yaml
+  author: Christian Riesen
+  input:
+    sensor_entity:
+      name: Button Action Sensor
+      description: The sensor entity that changes based on button presses.
+      selector:
+        entity:
+          domain: sensor
+    button_1_action:
+      name: Button 1 Action
+      description: Action to be triggered when the state is '1_single'.
+      default: []
+      selector:
+        action: {}
+    button_2_action:
+      name: Button 2 Action
+      description: Action to be triggered when the state is '2_single'.
+      default: []
+      selector:
+        action: {}
+    button_3_action:
+      name: Button 3 Action
+      description: Action to be triggered when the state is '3_single'.
+      default: []
+      selector:
+        action: {}
+    button_4_action:
+      name: Button 4 Action
+      description: Action to be triggered when the state is '4_single'.
+      default: []
+      selector:
+        action: {}
+
+trigger:
+  - platform: state
+    entity_id: !input sensor_entity
+
+condition: []
+
+action:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == '1_single' }}"
+        sequence: !input button_1_action
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == '2_single' }}"
+        sequence: !input button_2_action
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == '3_single' }}"
+        sequence: !input button_3_action
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == '4_single' }}"
+        sequence: !input button_4_action
+    default: []
+
+mode: single
